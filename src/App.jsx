@@ -1,13 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { database } from "./firebase";
+import { ref, set, onValue } from "firebase/database";
 import "./App.css";
 
 export default function App() {
-  const [players, setPlayers] = useState([
-    "Felipe", "Bruce", "Caio", "Biel", "Diego Orelha", "Dodô", 
-    "Frango", "Jhonathan", "Jhonny", "Jonas", "Leandro", 
-    "Thiago Anão", "Rodrigo", "Thomaz", "Sidney", "Enzzo", "Morais"
-  ]);
-
+  const [players, setPlayers] = useState([]);
   const [newPlayer, setNewPlayer] = useState("");
   const months = ["Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
   const [payments, setPayments] = useState({});
@@ -15,27 +12,57 @@ export default function App() {
   const [editingCell, setEditingCell] = useState(null);
   const [tempValue, setTempValue] = useState("");
 
-  // Controle do salão
   const [salaoTotal] = useState(1000);
   const [salaoPago, setSalaoPago] = useState(0);
   const [editingSalao, setEditingSalao] = useState(false);
   const [tempSalao, setTempSalao] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Carrega dados do Firebase em tempo real
+  useEffect(() => {
+    const playersRef = ref(database, 'players');
+    const paymentsRef = ref(database, 'payments');
+    const customValuesRef = ref(database, 'customValues');
+    const salaoPagoRef = ref(database, 'salaoPago');
+
+    onValue(playersRef, (snapshot) => {
+      const data = snapshot.val();
+      setPlayers(data || [
+        "Felipe", "Bruce", "Caio", "Biel", "Diego Orelha", "Dodô", 
+        "Frango", "Jhonathan", "Jhonny", "Jonas", "Leandro", 
+        "Thiago Anão", "Rodrigo", "Thomaz", "Sidney", "Enzzo", "Morais"
+      ]);
+      setLoading(false);
+    });
+
+    onValue(paymentsRef, (snapshot) => {
+      setPayments(snapshot.val() || {});
+    });
+
+    onValue(customValuesRef, (snapshot) => {
+      setCustomValues(snapshot.val() || {});
+    });
+
+    onValue(salaoPagoRef, (snapshot) => {
+      setSalaoPago(snapshot.val() || 0);
+    });
+  }, []);
 
   const togglePayment = (player, month) => {
     const key = `${player}-${month}`;
     
     if (payments[key]) {
-      // Se já está pago, despaga
+      // Remove pagamento
       const newPayments = { ...payments };
       delete newPayments[key];
-      setPayments(newPayments);
+      set(ref(database, 'payments'), newPayments);
       
       const newCustom = { ...customValues };
       delete newCustom[key];
-      setCustomValues(newCustom);
+      set(ref(database, 'customValues'), newCustom);
     } else {
-      // Se não está pago, marca como pago com valor padrão
-      setPayments({ ...payments, [key]: true });
+      // Adiciona pagamento
+      set(ref(database, `payments/${key}`), true);
     }
   };
 
@@ -51,7 +78,7 @@ export default function App() {
     if (editingCell && tempValue) {
       const value = parseFloat(tempValue);
       if (!isNaN(value) && value > 0) {
-        setCustomValues({ ...customValues, [editingCell]: value });
+        set(ref(database, `customValues/${editingCell}`), value);
       }
     }
     setEditingCell(null);
@@ -60,16 +87,18 @@ export default function App() {
 
   const addPlayer = () => {
     if (!newPlayer.trim()) return;
-    setPlayers([...players, newPlayer]);
+    const updatedPlayers = [...players, newPlayer];
+    set(ref(database, 'players'), updatedPlayers);
     setNewPlayer("");
   };
 
   const removePlayer = (playerToRemove) => {
     if (!confirm(`Remover ${playerToRemove}?`)) return;
     
-    setPlayers(players.filter(p => p !== playerToRemove));
+    const updatedPlayers = players.filter(p => p !== playerToRemove);
+    set(ref(database, 'players'), updatedPlayers);
     
-    // Remove os pagamentos desse jogador, mas NÃO remove do total arrecadado
+    // Remove pagamentos
     const newPayments = { ...payments };
     const newCustom = { ...customValues };
     
@@ -79,26 +108,35 @@ export default function App() {
       delete newCustom[key];
     });
     
-    setPayments(newPayments);
-    setCustomValues(newCustom);
+    set(ref(database, 'payments'), newPayments);
+    set(ref(database, 'customValues'), newCustom);
   };
 
   const saveSalaoPago = () => {
     const value = parseFloat(tempSalao);
     if (!isNaN(value) && value >= 0) {
-      setSalaoPago(value);
+      set(ref(database, 'salaoPago'), value);
     }
     setEditingSalao(false);
     setTempSalao("");
   };
 
-  // Calcula o total arrecadado considerando valores customizados
   const totalPaid = Object.keys(payments).reduce((sum, key) => {
     return sum + (customValues[key] || 45);
   }, 0);
 
   const totalExpected = players.length * 45 * 7;
   const salaoRestante = salaoTotal - salaoPago;
+
+  if (loading) {
+    return (
+      <div className="app">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <h2>⚽ Carregando dados...</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">

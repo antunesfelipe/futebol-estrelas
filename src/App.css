@@ -313,3 +313,17 @@ tbody td {
   background: #0ea5e9;
   transform: translateY(-2px);
 }
+
+.reset-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid #ef4444;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+
