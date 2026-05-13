@@ -1,0 +1,315 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0a0a0a;
+  color: white;
+}
+
+.app { 
+  min-height: 100vh; 
+  padding: 2rem; 
+}
+
+.container { 
+  max-width: 1400px; 
+  margin: 0 auto; 
+}
+
+.header {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  border-radius: 24px;
+  padding: 3rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 20px 60px rgba(14, 165, 233, 0.3);
+}
+
+.header h1 { 
+  font-size: 3rem; 
+  margin-bottom: 0.5rem; 
+}
+
+.header p { 
+  font-size: 1.25rem; 
+  opacity: 0.9; 
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.stat-card {
+  background: rgba(0,0,0,0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+.value {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .main-grid { grid-template-columns: 1fr; }
+}
+
+.table-section, .card {
+  background: #18181b;
+  border-radius: 24px;
+  padding: 2rem;
+  border: 1px solid #27272a;
+}
+
+h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  padding: 1rem;
+  text-align: left;
+  color: #a1a1aa;
+  border-bottom: 1px solid #27272a;
+  font-weight: 600;
+}
+
+tbody tr {
+  border-bottom: 1px solid #27272a;
+  transition: background 0.2s;
+}
+
+tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+tbody td {
+  padding: 1.25rem 0.75rem;
+  text-align: center;
+}
+
+.player-name {
+  text-align: left;
+  font-weight: 500;
+}
+
+.cell-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.check-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #27272a;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.check-btn:hover {
+  transform: scale(1.1);
+}
+
+.check-btn.paid {
+  background: #22c55e;
+}
+
+.custom-value {
+  font-size: 0.75rem;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.edit-value-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  padding: 0.25rem;
+}
+
+.edit-value-btn:hover {
+  opacity: 1;
+}
+
+.value-input {
+  width: 70px;
+  padding: 0.25rem 0.5rem;
+  background: #27272a;
+  border: 2px solid #0ea5e9;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  opacity: 0.5;
+  transition: all 0.2s;
+  padding: 0.5rem;
+}
+
+.remove-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-item {
+  background: #27272a;
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.info-item.restante {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  border: none;
+}
+
+.info-item span {
+  display: block;
+  font-size: 0.875rem;
+  color: #a1a1aa;
+  margin-bottom: 0.5rem;
+}
+
+.info-item.restante span {
+  color: rgba(255,255,255,0.9);
+}
+
+.info-item strong {
+  font-size: 1.5rem;
+}
+
+.info-item strong.negative {
+  color: #fef2f2;
+}
+
+.info-item strong.positive {
+  color: #22c55e;
+}
+
+.highlight {
+  color: #fbbf24;
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.salao-input {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #18181b;
+  border: 2px solid #0ea5e9;
+  border-radius: 8px;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.edit-salao-btn {
+  background: #0ea5e9;
+  border: none;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+}
+
+.edit-salao-btn:hover {
+  background: #0284c7;
+}
+
+.input-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.input-group input {
+  flex: 1;
+  background: #27272a;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  color: white;
+  font-size: 1rem;
+}
+
+.input-group button {
+  background: #0ea5e9;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.input-group button:hover {
+  background: #0284c7;
+}
+
+.structure-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.structure-item {
+  background: #27272a;
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.structure-item:hover {
+  background: #0ea5e9;
+  transform: translateY(-2px);
+}
