@@ -439,3 +439,51 @@ tbody td {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.history-toggle-btn {
+  background: #27272a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: #a1a1aa;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.history-toggle-btn:hover {
+  background: #3f3f46;
+  color: white;
+}
+
+.delete-message-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  opacity: 0.6;
+  transition: all 0.2s;
+  padding: 0.25rem;
+}
+
+.delete-message-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.deleted-message {
+  opacity: 0.7;
+  border-left-color: #ef4444;
+}
+
+.delete-info {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #3f3f46;
+  font-size: 0.8rem;
+  color: #71717a;
+}
+
+.delete-info strong {
+  color: #ef4444;
+}

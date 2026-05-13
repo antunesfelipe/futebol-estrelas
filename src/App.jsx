@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { database } from "./firebase";
-import { ref, set, onValue, push } from "firebase/database";
+import { ref, set, onValue, push, remove } from "firebase/database";
 import "./App.css";
 
 export default function App() {
@@ -20,8 +20,10 @@ export default function App() {
 
   // Mural de avisos
   const [messages, setMessages] = useState([]);
+  const [deletedMessages, setDeletedMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [authorName, setAuthorName] = useState("");
+  const [showDeleteHistory, setShowDeleteHistory] = useState(false);
 
   // Carrega dados do Firebase em tempo real
   useEffect(() => {
@@ -30,6 +32,7 @@ export default function App() {
     const customValuesRef = ref(database, 'customValues');
     const salaoPagoRef = ref(database, 'salaoPago');
     const messagesRef = ref(database, 'messages');
+    const deletedMessagesRef = ref(database, 'deletedMessages');
 
     onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
@@ -63,6 +66,19 @@ export default function App() {
         setMessages(messagesList);
       } else {
         setMessages([]);
+      }
+    });
+
+    onValue(deletedMessagesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const deletedList = Object.keys(data).map(key => ({
+          id: key,
+          ...data[key]
+        })).sort((a, b) => b.deletedAt - a.deletedAt);
+        setDeletedMessages(deletedList);
+      } else {
+        setDeletedMessages([]);
       }
     });
   }, []);
@@ -153,6 +169,35 @@ export default function App() {
     });
 
     setNewMessage("");
+  };
+
+  const deleteMessage = (messageId, messageData) => {
+    const deleterName = prompt("Seu nome (quem está excluindo):");
+    
+    if (!deleterName || !deleterName.trim()) {
+      alert("Nome é obrigatório para excluir!");
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja excluir esta mensagem?`)) {
+      return;
+    }
+
+    // Move para histórico de deletados
+    const deletedMessagesRef = ref(database, 'deletedMessages');
+    const newDeletedRef = push(deletedMessagesRef);
+    
+    set(newDeletedRef, {
+      originalAuthor: messageData.author,
+      text: messageData.text,
+      originalTimestamp: messageData.timestamp,
+      deletedBy: deleterName.trim(),
+      deletedAt: Date.now()
+    });
+
+    // Remove da lista de mensagens ativas
+    const messageRef = ref(database, `messages/${messageId}`);
+    remove(messageRef);
   };
 
   const formatDate = (timestamp) => {
@@ -348,48 +393,92 @@ export default function App() {
             </div>
 
             <div className="card">
-              <h2>📢 Mural de Avisos</h2>
-              
-              <div className="message-form">
-                <input
-                  value={authorName}
-                  onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder="Seu nome..."
-                  className="message-input"
-                />
-                <textarea
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Escreva um aviso (pagamento, confirmação, etc)..."
-                  className="message-textarea"
-                  rows="3"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      postMessage();
-                    }
-                  }}
-                />
-                <button onClick={postMessage} className="message-btn">
-                  📤 Enviar
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h2>📢 Mural de Avisos</h2>
+                <button 
+                  className="history-toggle-btn"
+                  onClick={() => setShowDeleteHistory(!showDeleteHistory)}
+                  title="Ver histórico de exclusões"
+                >
+                  {showDeleteHistory ? '📋 Avisos' : '🗑️ Histórico'}
                 </button>
               </div>
+              
+              {!showDeleteHistory ? (
+                <>
+                  <div className="message-form">
+                    <input
+                      value={authorName}
+                      onChange={(e) => setAuthorName(e.target.value)}
+                      placeholder="Seu nome..."
+                      className="message-input"
+                    />
+                    <textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Escreva um aviso (pagamento, confirmação, etc)..."
+                      className="message-textarea"
+                      rows="3"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          postMessage();
+                        }
+                      }}
+                    />
+                    <button onClick={postMessage} className="message-btn">
+                      📤 Enviar
+                    </button>
+                  </div>
 
-              <div className="messages-list">
-                {messages.length === 0 ? (
-                  <p className="no-messages">Nenhum aviso ainda</p>
-                ) : (
-                  messages.map(msg => (
-                    <div key={msg.id} className="message-item">
-                      <div className="message-header">
-                        <strong>{msg.author}</strong>
-                        <span className="message-time">{formatDate(msg.timestamp)}</span>
+                  <div className="messages-list">
+                    {messages.length === 0 ? (
+                      <p className="no-messages">Nenhum aviso ainda</p>
+                    ) : (
+                      messages.map(msg => (
+                        <div key={msg.id} className="message-item">
+                          <div className="message-header">
+                            <strong>{msg.author}</strong>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                              <span className="message-time">{formatDate(msg.timestamp)}</span>
+                              <button
+                                className="delete-message-btn"
+                                onClick={() => deleteMessage(msg.id, msg)}
+                                title="Excluir mensagem"
+                              >
+                                ❌
+                              </button>
+                            </div>
+                          </div>
+                          <p className="message-text">{msg.text}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="messages-list">
+                  <p style={{ fontSize: '0.875rem', color: '#71717a', marginBottom: '1rem' }}>
+                    Histórico de mensagens excluídas
+                  </p>
+                  {deletedMessages.length === 0 ? (
+                    <p className="no-messages">Nenhuma mensagem excluída</p>
+                  ) : (
+                    deletedMessages.map(msg => (
+                      <div key={msg.id} className="message-item deleted-message">
+                        <div className="message-header">
+                          <strong>{msg.originalAuthor}</strong>
+                          <span className="message-time">{formatDate(msg.originalTimestamp)}</span>
+                        </div>
+                        <p className="message-text">{msg.text}</p>
+                        <div className="delete-info">
+                          <span>🗑️ Excluída por <strong>{msg.deletedBy}</strong> em {formatDate(msg.deletedAt)}</span>
+                        </div>
                       </div>
-                      <p className="message-text">{msg.text}</p>
-                    </div>
-                  ))
-                )}
-              </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="card">
