@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { database } from "./firebase";
-import { ref, set, onValue } from "firebase/database";
+import { ref, set, onValue, push } from "firebase/database";
 import "./App.css";
 
 export default function App() {
@@ -18,12 +18,18 @@ export default function App() {
   const [tempSalao, setTempSalao] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Mural de avisos
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [authorName, setAuthorName] = useState("");
+
   // Carrega dados do Firebase em tempo real
   useEffect(() => {
     const playersRef = ref(database, 'players');
     const paymentsRef = ref(database, 'payments');
     const customValuesRef = ref(database, 'customValues');
     const salaoPagoRef = ref(database, 'salaoPago');
+    const messagesRef = ref(database, 'messages');
 
     onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
@@ -46,13 +52,25 @@ export default function App() {
     onValue(salaoPagoRef, (snapshot) => {
       setSalaoPago(snapshot.val() || 0);
     });
+
+    onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const messagesList = Object.keys(data).map(key => ({
+          id: key,
+          ...data[key]
+        })).sort((a, b) => b.timestamp - a.timestamp);
+        setMessages(messagesList);
+      } else {
+        setMessages([]);
+      }
+    });
   }, []);
 
   const togglePayment = (player, month) => {
     const key = `${player}-${month}`;
     
     if (payments[key]) {
-      // Remove pagamento
       const newPayments = { ...payments };
       delete newPayments[key];
       set(ref(database, 'payments'), newPayments);
@@ -61,7 +79,6 @@ export default function App() {
       delete newCustom[key];
       set(ref(database, 'customValues'), newCustom);
     } else {
-      // Adiciona pagamento
       set(ref(database, `payments/${key}`), true);
     }
   };
@@ -98,7 +115,6 @@ export default function App() {
     const updatedPlayers = players.filter(p => p !== playerToRemove);
     set(ref(database, 'players'), updatedPlayers);
     
-    // Remove pagamentos
     const newPayments = { ...payments };
     const newCustom = { ...customValues };
     
@@ -119,6 +135,33 @@ export default function App() {
     }
     setEditingSalao(false);
     setTempSalao("");
+  };
+
+  const postMessage = () => {
+    if (!newMessage.trim() || !authorName.trim()) {
+      alert("Preencha seu nome e a mensagem!");
+      return;
+    }
+
+    const messagesRef = ref(database, 'messages');
+    const newMessageRef = push(messagesRef);
+    
+    set(newMessageRef, {
+      author: authorName.trim(),
+      text: newMessage.trim(),
+      timestamp: Date.now()
+    });
+
+    setNewMessage("");
+  };
+
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month} às ${hours}:${minutes}`;
   };
 
   const totalPaid = Object.keys(payments).reduce((sum, key) => {
@@ -301,6 +344,51 @@ export default function App() {
                   onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
                 />
                 <button onClick={addPlayer}>+</button>
+              </div>
+            </div>
+
+            <div className="card">
+              <h2>📢 Mural de Avisos</h2>
+              
+              <div className="message-form">
+                <input
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="Seu nome..."
+                  className="message-input"
+                />
+                <textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Escreva um aviso (pagamento, confirmação, etc)..."
+                  className="message-textarea"
+                  rows="3"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      postMessage();
+                    }
+                  }}
+                />
+                <button onClick={postMessage} className="message-btn">
+                  📤 Enviar
+                </button>
+              </div>
+
+              <div className="messages-list">
+                {messages.length === 0 ? (
+                  <p className="no-messages">Nenhum aviso ainda</p>
+                ) : (
+                  messages.map(msg => (
+                    <div key={msg.id} className="message-item">
+                      <div className="message-header">
+                        <strong>{msg.author}</strong>
+                        <span className="message-time">{formatDate(msg.timestamp)}</span>
+                      </div>
+                      <p className="message-text">{msg.text}</p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 

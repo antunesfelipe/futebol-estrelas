@@ -327,3 +327,115 @@ tbody td {
 }
 
 
+/* Mural de Avisos */
+.message-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.message-input {
+  background: #27272a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.message-textarea {
+  background: #27272a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: white;
+  font-size: 0.95rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.message-input:focus,
+.message-textarea:focus {
+  outline: 2px solid #0ea5e9;
+}
+
+.message-btn {
+  background: #0ea5e9;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.message-btn:hover {
+  background: #0284c7;
+}
+
+.messages-list {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.messages-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-list::-webkit-scrollbar-track {
+  background: #18181b;
+  border-radius: 3px;
+}
+
+.messages-list::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+
+.messages-list::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+.no-messages {
+  text-align: center;
+  color: #71717a;
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+.message-item {
+  background: #27272a;
+  border-radius: 12px;
+  padding: 1rem;
+  border-left: 3px solid #0ea5e9;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.message-header strong {
+  color: #0ea5e9;
+  font-size: 0.95rem;
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: #71717a;
+}
+
+.message-text {
+  margin: 0;
+  color: #e4e4e7;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
